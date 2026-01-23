@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CognitiveTrack - Entrena tu mente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFDFF;
+            font-size: 0.95rem;
+        }
+        .animate-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .selection-purple::selection {
+            background-color: #f3e8ff;
+        }
+        .content-container {
+            max-width: 800px; 
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .quiz-container {
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .collection-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="selection-purple">
+
+    <!-- Navegación Ajustada: Nombre completo "CognitiveTrack" -->
+    <nav class="bg-white/80 border-b border-slate-100 px-4 md:px-6 py-4 sticky top-0 z-50 backdrop-blur-md flex flex-row justify-between items-center">
+        <div class="flex items-center gap-1.5 md:gap-2 cursor-pointer group flex-shrink-0" onclick="showPage('home')">
+            <div class="bg-purple-600 text-white p-1 rounded-lg md:p-1.5 md:rounded-xl">
+                <i data-lucide="activity" class="w-4 h-4 md:w-5 md:h-5"></i>
+            </div>
+            <span class="font-black text-lg md:text-xl tracking-tighter text-slate-900 italic">
+                Cognitive<span class="text-purple-600">Track</span>
+            </span>
+        </div>
+        
+        <!-- Tamaños dinámicos para evitar que se corte en móvil -->
+        <div class="flex gap-3 sm:gap-6 md:gap-8 text-[11px] sm:text-[12px] md:text-[13px] font-black uppercase tracking-[0.05em] sm:tracking-[0.15em] text-slate-400">
+            <button onclick="showPage('home')" class="hover:text-purple-600 transition-colors nav-link whitespace-nowrap" id="nav-home">Inicio</button>
+            <button onclick="showPage('collection')" class="hover:text-purple-600 transition-colors nav-link whitespace-nowrap" id="nav-collection">Colección</button>
+            <button onclick="showPage('challenges')" class="hover:text-purple-600 transition-colors nav-link whitespace-nowrap" id="nav-challenges">Desafíos</button>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal -->
+    <main id="app-content" class="min-h-screen">
+        <!-- El contenido se inyecta dinámicamente -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 py-6 px-6 mt-12">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="activity" class="text-purple-500 w-3 h-3"></i>
+                    <span class="font-black text-sm italic text-white tracking-tighter">
+                        Cognitive<span class="text-purple-600">Track</span>
+                    </span>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-slate-500 text-[9px] font-bold uppercase tracking-[0.2em] italic">
+                        Desarrolla tu pensamiento crítico
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- DATOS (SIN MODIFICAR) ---
+        const DEFINICION_GENERAL = {
+            title: "¿Qué es un Sesgo Cognitivo?",
+            content: "Un sesgo cognitivo es un atajo mental o una regla práctica sencilla que utilizamos para tomar decisiones. Los sesgos nos ahorran esfuerzos cognoscitivos, y nos llevan en muchas ocasiones a tomar decisiones correctas, pero también pueden llevarnos a errores sistemáticos (Kahneman y Tversky, 1974)."
+        };
+
+        const TIPOS_SESGOS = [
+            { nombre: "Sesgo de Disponibilidad", desc: "Damos más importancia a la información que recordamos más rápido (por ser reciente o impactante), aunque no sea la más común.", emoji: "🧠" },
+            { nombre: "Efecto Anclaje", desc: "Nuestra mente se queda 'atrapada' en el primer dato que recibe sobre algo, usándolo como base para todo lo demás.", emoji: "⚓" },
+            { nombre: "Efecto Dunning-Kruger", desc: "Ocurre cuando alguien que sabe poco sobre un tema cree que sabe muchísimo, o cuando expertos creen que lo suyo es fácil para todos.", emoji: "📈" },
+            { nombre: "Sesgo de Confirmación", desc: "Buscamos y recordamos solo la información que nos da la razón, ignorando aquello que contradice nuestras ideas.", emoji: "✅" },
+            { nombre: "Mentalidad de Manada", desc: "La tendencia a seguir las acciones o creencias de un grupo grande para sentirnos seguros o aceptados.", emoji: "🐑" }
+        ];
+
+        const COLECCION_DETALLADA = [
+            {
+                titulo: "Sesgo de Anclaje",
+                icono: "anchor",
+                queEs: "Tendemos a dar un peso excesivo a la primera información que recibimos, incluso cuando aparecen datos nuevos.",
+                ejemplo: "Ves un producto por 1.200€ y luego otro por 950€. El segundo parece barato, aunque no sepas su valor real.",
+                porQue: "El cerebro usa la primera referencia como punto de partida para decidir más rápido.",
+                cuando: "Precios, negociaciones, primeras impresiones."
+            },
+            {
+                titulo: "Sesgo de Confirmación",
+                icono: "search-check",
+                queEs: "Buscamos, interpretamos y recordamos la información de forma que confirme lo que ya creemos.",
+                ejemplo: "Lees noticias que refuerzan tu opinión y evitas fuentes que la contradicen.",
+                porQue: "Confirmar nuestras creencias reduce la incomodidad de estar equivocados.",
+                cuando: "Opiniones políticas, debates, redes sociales."
+            },
+            {
+                titulo: "Efecto Dunning-Kruger",
+                icono: "trending-up",
+                queEs: "Las personas con pocos conocimientos sobre un tema tienden a sobreestimar su comprensión.",
+                ejemplo: "Tras aprender lo básico de un tema, crees que ya lo dominas.",
+                porQue: "Para detectar la propia ignorancia se necesita precisamente conocimiento.",
+                cuando: "Aprendizaje inicial, debates, toma de decisiones sin experiencia."
+            },
+            {
+                titulo: "Efecto Manada",
+                icono: "users",
+                queEs: "Tendemos a hacer lo mismo que hace la mayoría, incluso sin analizar si es la mejor opción.",
+                ejemplo: "Compras algo porque “todo el mundo lo tiene”.",
+                porQue: "Seguir al grupo reduce la sensación de riesgo y responsabilidad individual.",
+                cuando: "Tendencias, modas, inversión, redes sociales."
+            },
+            {
+                titulo: "Sesgo de Disponibilidad",
+                icono: "zap",
+                queEs: "Estimamos la probabilidad de un evento según lo fácil que nos viene a la mente.",
+                ejemplo: "Tras ver noticias de accidentes, percibes ese riesgo como más frecuente.",
+                porQue: "El cerebro da más peso a la información reciente o emocional.",
+                cuando: "Noticias, miedos, toma de decisiones bajo incertidumbre."
+            }
+        ];
+
+        const EJEMPLO_SESGO = {
+            header: "Ejemplo: El Sesgo de Confirmación",
+            title: "¿Reseñas honestas o confirmación?",
+            contentPart1: "Imagina que has estado ahorrando meses para comprar un videojuego que te hace mucha ilusión. Estás convencido de que será una obra maestra. Sin embargo, al llegar el día del lanzamiento, notas que las críticas son mixtas y muchas no son tan buenas como esperabas.",
+            contentPart2: "Inconscientemente, decides ignorar los puntos negativos y te centras únicamente en los comentarios positivos. Buscas a esos pocos analistas que dicen que el juego es excelente, porque sus palabras confirman lo que tú ya habías decidido creer: que el juego es bueno. Esto es un ejemplo claro de cómo filtramos la realidad para que encaje con nuestras expectativas previas."
+        };
+
+        const TEST_SESGOS = [
+            { id: 1, question: "Ves un portátil anunciado primero por 1.200€ y luego lo encuentras por 950€. ¿Qué impresión te causa?", options: [{ id: "1a", text: "Parece una buena oportunidad teniendo en cuenta el precio inicial", bias: true }, { id: "1b", text: "Necesitaría comparar con otros modelos similares antes de valorarlo", bias: false }] },
+            { id: 2, question: "Tras leer varios artículos que apoyan tu postura sobre un tema social, concluyes que:", options: [{ id: "2a", text: "La mayoría de expertos parecen estar de acuerdo con mi opinión", bias: true }, { id: "2b", text: "Puede que esté consumiendo información alineada con mis creencias", bias: false }] },
+            { id: 3, question: "Un amigo cercano te cuenta una mala experiencia con una aerolínea. Al plantearte viajar:", options: [{ id: "3a", text: "Tienes más reservas sobre esa compañía", bias: true }, { id: "3b", text: "Consideras que una experiencia individual no es concluyente", bias: false }] },
+            { id: 4, question: "En un entorno nuevo, observas que la mayoría de personas actúa de cierta manera. Tú:", options: [{ id: "4a", text: "Tiendes a hacer lo mismo para adaptarte mejor", bias: true }, { id: "4b", text: "Decides en función de tus propios criterios", bias: false }] },
+            { id: 5, question: "Tras aprender los conceptos básicos de un tema técnico, piensas que:", options: [{ id: "5a", text: "Ya puedes opinar con bastante seguridad", bias: true }, { id: "5b", text: "Aún necesitas profundizar para comprenderlo bien", bias: false }] },
+            { id: 6, question: "Recuerdas varias noticias recientes sobre robos en tu ciudad. Al salir de noche:", options: [{ id: "6a", text: "Percibes el entorno como más peligroso de lo habitual", bias: true }, { id: "6b", text: "Intentas basarte en datos generales de criminalidad", bias: false }] },
+            { id: 7, question: "Un profesor al que respetas mucho defiende una teoría concreta. Tú:", options: [{ id: "7a", text: "Le das bastante credibilidad por su trayectoria", bias: true }, { id: "7b", text: "Valoras la teoría independientemente de quién la exponga", bias: false }] },
+            { id: 8, question: "Llevas años usando un mismo método de estudio porque te ha funcionado.", options: [{ id: "8a", text: "Lo mantienes sin probar alternativas", bias: true }, { id: "8b", text: "Consideras que podría haber métodos más eficaces", bias: false }] },
+            { id: 9, question: "Ves que una aplicación es muy popular entre personas de tu entorno.", options: [{ id: "9a", text: "Sueles asumir que es una buena opción", bias: true }, { id: "9b", text: "Prefieres analizar si se ajusta a tus necesidades", bias: false }] },
+            { id: 10, question: "Tras obtener buenos resultados repetidos en una tarea, concluyes que:", options: [{ id: "10a", text: "Tienes una habilidad clara para ello", bias: true }, { id: "10b", text: "Puede debe ser en parte a circunstancias favorables", bias: false }] }
+        ];
+
+        const IDENTIFICACION_SESGOS = [
+            { id: "v2_1", question: "Un analista financiero estima que una empresa vale 50€. Aunque nuevos datos sugieren otra cifra, sigues evaluándola en torno a ese valor.", options: [{ id: "opt1", text: "Anclaje", correct: true }, { id: "opt2", text: "Confirmación", correct: false }, { id: "opt3", text: "Dunning-Kruger", correct: false }, { id: "opt4", text: "Manada", correct: false }, { id: "opt5", text: "Disponibilidad", correct: false }] },
+            { id: "v2_2", question: "Tras leer varios estudios contradictorios sobre nutrición, tiendes a confiar más en los que coinciden con tu dieta actual.", options: [{ id: "opt1", text: "Anclaje", correct: false }, { id: "opt2", text: "Confirmación", correct: true }, { id: "opt3", text: "Dunning-Kruger", correct: false }, { id: "opt4", text: "Manada", correct: false }, { id: "opt5", text: "Disponibilidad", correct: false }] },
+            { id: "v2_3", question: "Una persona con conocimientos básicos sobre psicología cree poder diagnosticar a otros con facilidad.", options: [{ id: "opt1", text: "Anclaje", correct: false }, { id: "opt2", text: "Confirmación", correct: false }, { id: "opt3", text: "Dunning-Kruger", correct: true }, { id: "opt4", text: "Manada", correct: false }, { id: "opt5", text: "Disponibilidad", correct: false }] },
+            { id: "v2_4", question: "Un inversor compra acciones principalmente porque están siendo muy comentadas en redes sociales.", options: [{ id: "opt1", text: "Anclaje", correct: false }, { id: "opt2", text: "Confirmación", correct: false }, { id: "opt3", text: "Dunning-Kruger", correct: false }, { id: "opt4", text: "Manada", correct: true }, { id: "opt5", text: "Disponibilidad", correct: false }] },
+            { id: "v2_5", question: "Después de ver varios casos mediáticos de fraude, sobreestimas la probabilidad de ser estafado.", options: [{ id: "opt1", text: "Anclaje", correct: false }, { id: "opt2", text: "Confirmación", correct: false }, { id: "opt3", text: "Dunning-Kruger", correct: false }, { id: "opt4", text: "Manada", correct: false }, { id: "opt5", text: "Disponibilidad", correct: true }] },
+            { id: "v2_6", question: "Un estudiante cree que su bajo rendimiento se debe únicamente a que el examen era injusto, ignorando otras explicaciones.", options: [{ id: "opt1", text: "Anclaje", correct: false }, { id: "opt2", text: "Confirmación", correct: true }, { id: "opt3", text: "Dunning-Kruger", correct: false }, { id: "opt4", text: "Manada", correct: false }, { id: "opt5", text: "Disponibilidad", correct: false }] },
+            { id: "v2_7", question: "Das más peso a una opinión porque fue la primera que escuchaste.", options: [{ id: "opt1", text: "Anclaje", correct: true }, { id: "opt2", text: "Confirmación", correct: false }, { id: "opt3", text: "Dunning-Kruger", correct: false }, { id: "opt4", text: "Manada", correct: false }, { id: "opt5", text: "Disponibilidad", correct: false }] },
+            { id: "v2_8", question: "Un conductor considera que maneja mejor que la mayoría, pese a no tener datos objetivos que lo respalden.", options: [{ id: "opt1", text: "Anclaje", correct: false }, { id: "opt2", text: "Confirmación", correct: false }, { id: "opt3", text: "Dunning-Kruger", correct: true }, { id: "opt4", text: "Manada", correct: false }, { id: "opt5", text: "Disponibilidad", correct: false }] },
+            { id: "v2_9", question: "Decides no viajar en avión tras recordar con facilidad accidentes aéreos, aunque estadísticamente sea seguro.", options: [{ id: "opt1", text: "Anclaje", correct: false }, { id: "opt2", text: "Confirmación", correct: false }, { id: "opt3", text: "Dunning-Kruger", correct: false }, { id: "opt4", text: "Manada", correct: false }, { id: "opt5", text: "Disponibilidad", correct: true }] },
+            { id: "v2_10", question: "Una persona cambia su opinión sobre un producto al saber que es el más vendido del mercado.", options: [{ id: "opt1", text: "Anclaje", correct: false }, { id: "opt2", text: "Confirmación", correct: false }, { id: "opt3", text: "Dunning-Kruger", correct: false }, { id: "opt4", text: "Manada", correct: true }, { id: "opt5", text: "Disponibilidad", correct: false }] }
+        ];
+
+        // --- ESTADO ---
+        let currentPage = 'home';
+        let currentMode = null;
+        let collectionIdx = 0;
+        let quizState = { currentIdx: 0, hasAnswered: false, score: 0, selectedId: null };
+
+        // --- RENDERIZADO ---
+        function render() {
+            const content = document.getElementById('app-content');
+            content.innerHTML = '';
+            
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('text-purple-600', 'underline', 'underline-offset-8', 'decoration-2'));
+            if (currentPage === 'home') document.getElementById('nav-home').classList.add('text-purple-600', 'underline', 'underline-offset-8', 'decoration-2');
+            if (currentPage === 'collection') document.getElementById('nav-collection').classList.add('text-purple-600', 'underline', 'underline-offset-8', 'decoration-2');
+            if (currentPage === 'challenges' || currentMode) document.getElementById('nav-challenges').classList.add('text-purple-600', 'underline', 'underline-offset-8', 'decoration-2');
+
+            if (currentMode) {
+                renderQuiz();
+            } else {
+                switch(currentPage) {
+                    case 'home': renderHome(); break;
+                    case 'collection': renderCollection(); break;
+                    case 'challenges': renderChallenges(); break;
+                }
+            }
+            lucide.createIcons();
+            window.scrollTo(0,0);
+        }
+
+        function renderHome() {
+            const content = document.getElementById('app-content');
+            content.innerHTML = `
+                <div class="content-container space-y-12 py-8 px-6 animate-in">
+                    <div class="text-center space-y-3">
+                        <div class="inline-block relative mb-1">
+                            <div class="bg-purple-600 p-3 rounded-2xl shadow-lg rotate-3 transform">
+                                <i data-lucide="sparkles" class="text-white w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter italic leading-none">
+                            Cognitive<span class="text-purple-600">Track</span>
+                        </h1>
+                        <div class="max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-purple-50 text-center relative mt-12">
+                            <h2 class="text-lg md:text-xl font-black text-slate-900 flex items-center justify-center gap-3 italic mb-3">
+                                <i data-lucide="brain" class="text-purple-500 w-5 h-5"></i> ${DEFINICION_GENERAL.title}
+                            </h2>
+                            <p class="text-sm md:text-base text-slate-600 leading-relaxed font-medium italic text-justify">${DEFINICION_GENERAL.content}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-8">
+                        <div class="text-center space-y-2">
+                            <h2 class="text-2xl font-black text-slate-900 italic uppercase tracking-tight">Tipos de Sesgos</h2>
+                            <div class="h-1 w-16 bg-purple-600 mx-auto rounded-full"></div>
+                        </div>
+                        <div class="grid gap-5 sm:grid-cols-1 md:grid-cols-2">
+                            ${TIPOS_SESGOS.map(item => `
+                                <div class="bg-white p-6 rounded-[1.5rem] shadow-sm border border-slate-100 hover:shadow-md transition-all group">
+                                    <div class="text-3xl mb-3 bg-slate-50 w-12 h-12 rounded-xl flex items-center justify-center group-hover:bg-purple-50 transition-colors">${item.emoji}</div>
+                                    <h3 class="text-base font-black text-slate-900 mb-1.5 italic">${item.nombre}</h3>
+                                    <p class="text-slate-500 text-[13px] leading-relaxed font-medium italic text-justify">${item.desc}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="max-w-3xl mx-auto bg-slate-900 rounded-[2.5rem] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-6 right-6 text-purple-500/20">
+                            <i data-lucide="gamepad-2" class="w-10 h-10"></i>
+                        </div>
+                        <div class="relative z-10 space-y-6">
+                            <div class="inline-flex items-center gap-3 bg-purple-900/50 px-4 py-2 rounded-xl border border-purple-500/30">
+                                <i data-lucide="lightbulb" class="text-purple-300 w-4 h-4"></i>
+                                <span class="text-[11px] font-black italic tracking-wide text-purple-100 uppercase">${EJEMPLO_SESGO.header}</span>
+                            </div>
+                            <h2 class="text-3xl md:text-4xl font-black italic leading-none text-white tracking-tighter">${EJEMPLO_SESGO.title}</h2>
+                            <div class="text-slate-300 text-base md:text-lg leading-relaxed italic font-medium border-l-4 border-purple-600 pl-6 text-justify space-y-3">
+                                <p>${EJEMPLO_SESGO.contentPart1}</p>
+                                <p>${EJEMPLO_SESGO.contentPart2}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCollection() {
+            const bias = COLECCION_DETALLADA[collectionIdx];
+            const content = document.getElementById('app-content');
+            content.innerHTML = `
+                <div class="content-container py-12 px-6 animate-in space-y-10">
+                    <div class="text-center space-y-3">
+                        <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter italic">Colección de Sesgos</h2>
+                        <p class="text-slate-500 text-base font-medium italic max-w-lg mx-auto">
+                            En esta sección encontrarás los sesgos mencionados en la página Inicio de una forma más explicativa.
+                        </p>
+                    </div>
+
+                    <div class="relative max-w-2xl mx-auto">
+                        <div class="absolute -left-12 top-1/2 -translate-y-1/2 hidden md:block">
+                            <button onclick="changeCollection(-1)" class="p-3 bg-white rounded-full shadow-md border border-slate-100 hover:bg-purple-600 hover:text-white transition-all disabled:opacity-30" ${collectionIdx === 0 ? 'disabled' : ''}>
+                                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <div class="absolute -right-12 top-1/2 -translate-y-1/2 hidden md:block">
+                            <button onclick="changeCollection(1)" class="p-3 bg-white rounded-full shadow-md border border-slate-100 hover:bg-purple-600 hover:text-white transition-all disabled:opacity-30" ${collectionIdx === COLECCION_DETALLADA.length - 1 ? 'disabled' : ''}>
+                                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+
+                        <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden collection-card">
+                            <div class="bg-purple-600 p-8 text-white flex justify-between items-center">
+                                <div class="space-y-1">
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-purple-200">Explorando la mente</span>
+                                    <h3 class="text-2xl font-black italic">${bias.titulo}</h3>
+                                </div>
+                                <div class="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
+                                    <i data-lucide="${bias.icono}" class="w-6 h-6 text-white"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="p-8 md:p-10 space-y-8 italic">
+                                <div class="space-y-2">
+                                    <h4 class="text-purple-600 font-black text-xs uppercase tracking-tighter flex items-center gap-2">
+                                        <i data-lucide="book-open" class="w-3 h-3"></i> ¿Qué es?
+                                    </h4>
+                                    <p class="text-slate-700 font-medium text-justify text-sm md:text-base leading-relaxed">${bias.queEs}</p>
+                                </div>
+
+                                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-2">
+                                    <h4 class="text-slate-900 font-black text-xs uppercase tracking-tighter flex items-center gap-2">
+                                        <i data-lucide="star" class="w-3 h-3 text-purple-600"></i> Ejemplo cotidiano
+                                    </h4>
+                                    <p class="text-slate-600 font-medium text-justify text-sm leading-relaxed">${bias.ejemplo}</p>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <h4 class="text-purple-600 font-black text-xs uppercase tracking-tighter flex items-center gap-2">
+                                        <i data-lucide="help-circle" class="w-3 h-3"></i> ¿Por qué ocurre?
+                                    </h4>
+                                    <p class="text-slate-700 font-medium text-justify text-sm md:text-base leading-relaxed">${bias.porQue}</p>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <h4 class="text-purple-600 font-black text-xs uppercase tracking-tighter flex items-center gap-2">
+                                        <i data-lucide="calendar" class="w-3 h-3"></i> ¿Cuándo suele aparecer?
+                                    </h4>
+                                    <p class="text-slate-700 font-medium text-justify text-sm md:text-base leading-relaxed">${bias.cuando}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex border-t border-slate-50 md:hidden">
+                                <button onclick="changeCollection(-1)" class="flex-1 py-4 flex items-center justify-center gap-2 font-black text-slate-400 disabled:opacity-20" ${collectionIdx === 0 ? 'disabled' : ''}>
+                                    <i data-lucide="chevron-left" class="w-4 h-4"></i> Anterior
+                                </button>
+                                <div class="w-px bg-slate-50"></div>
+                                <button onclick="changeCollection(1)" class="flex-1 py-4 flex items-center justify-center gap-2 font-black text-purple-600 disabled:opacity-20" ${collectionIdx === COLECCION_DETALLADA.length - 1 ? 'disabled' : ''}>
+                                    Siguiente <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center gap-2 mt-8">
+                            ${COLECCION_DETALLADA.map((_, i) => `
+                                <div class="h-1.5 rounded-full transition-all ${i === collectionIdx ? 'w-8 bg-purple-600' : 'w-2 bg-slate-200'}"></div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderChallenges() {
+            const content = document.getElementById('app-content');
+            content.innerHTML = `
+                <div class="max-w-2xl mx-auto py-12 px-6 animate-in text-center space-y-12">
+                    <div class="space-y-3">
+                        <h2 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter italic">Elige tu desafío</h2>
+                        <p class="text-slate-500 text-base font-medium italic">Pon a prueba tu mente con dos modos de análisis distintos</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-6">
+                        <button onclick="startQuiz('eval')" class="group bg-white p-8 rounded-[2rem] border border-slate-100 hover:border-purple-600 transition-all shadow-sm hover:shadow-lg text-left">
+                            <div class="bg-purple-50 text-purple-600 w-12 h-12 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                                <i data-lucide="target" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800 mb-1.5 italic">¿Qué tan sesgadas son tus respuestas?</h3>
+                            <p class="text-slate-500 text-sm italic font-medium mb-5">Situaciones reales para medir si decides con lógica o atajos.</p>
+                            <div class="flex items-center gap-2 text-purple-600 font-black uppercase text-[10px] tracking-widest bg-purple-50 group-hover:bg-purple-600 group-hover:text-white px-3 py-1.5 rounded-full w-fit transition-all">
+                                COMENZAR DESAFÍO 1 <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                            </div>
+                        </button>
+                        
+                        <button onclick="startQuiz('id')" class="group bg-white p-8 rounded-[2rem] border border-slate-100 hover:border-purple-600 transition-all shadow-sm hover:shadow-lg text-left">
+                            <div class="bg-purple-50 text-purple-600 w-12 h-12 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                                <i data-lucide="search" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800 mb-1.5 italic">¿Serías capaz de identificar el sesgo?</h3>
+                            <p class="text-slate-500 text-sm italic font-medium mb-5">Analiza historias y detecta qué sesgo cognitivo se está cometiendo.</p>
+                            <div class="flex items-center gap-2 text-purple-600 font-black uppercase text-[10px] tracking-widest bg-purple-50 group-hover:bg-purple-600 group-hover:text-white px-3 py-1.5 rounded-full w-fit transition-all">
+                                COMENZAR DESAFÍO 2 <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderQuiz() {
+            const questions = currentMode === 'eval' ? TEST_SESGOS : IDENTIFICACION_SESGOS;
+            const q = questions[quizState.currentIdx];
+            const content = document.getElementById('app-content');
+
+            content.innerHTML = `
+                <div class="quiz-container py-10 px-6 animate-in">
+                    <div class="mb-6 flex justify-between items-center border-b border-slate-100 pb-4">
+                        <div class="space-y-2 flex-1">
+                            <h2 class="text-xl md:text-2xl font-black text-slate-800 italic leading-tight">
+                                ${currentMode === 'eval' ? 'Responde intuitivamente' : 'Detector de Errores'}
+                            </h2>
+                        </div>
+                        <div class="text-right pl-6">
+                            <span class="text-3xl font-black text-purple-600 italic">${quizState.currentIdx + 1}</span>
+                            <span class="text-slate-300 font-black text-lg">/${questions.length}</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-8 md:p-12 rounded-[2rem] shadow-sm border border-slate-100">
+                        <p class="text-lg font-black text-slate-800 mb-8 italic leading-tight">"${q.question}"</p>
+                        <div class="grid gap-3">
+                            ${q.options.map((opt, idx) => {
+                                let style = "border-slate-50 bg-slate-50/50 text-slate-600 hover:border-purple-600 hover:bg-purple-50/30";
+                                const prefix = ["A", "B", "C", "D", "E"][idx];
+                                
+                                if (quizState.hasAnswered) {
+                                    if (currentMode === 'id') {
+                                        if (opt.correct) style = "border-green-600 bg-green-50 text-green-700";
+                                        else if (quizState.selectedId === opt.id) style = "border-red-600 bg-red-50 text-red-700";
+                                        else style = "border-slate-50 opacity-40 text-slate-400";
+                                    } else {
+                                        if (quizState.selectedId === opt.id) style = "border-purple-600 bg-purple-50 text-purple-700";
+                                        else style = "border-slate-50 opacity-40 text-slate-400";
+                                    }
+                                }
+                                
+                                return `
+                                    <button onclick="handleAnswer('${opt.id}')" ${quizState.hasAnswered ? 'disabled' : ''} 
+                                        class="w-full p-5 md:p-6 rounded-xl border-2 transition-all text-left font-black italic text-sm ${style}">
+                                        <div class="flex items-center justify-between">
+                                            <span><span class="mr-2">${prefix})</span> ${opt.text}</span>
+                                            ${quizState.hasAnswered ? renderStatus(opt) : ''}
+                                        </div>
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                        ${quizState.hasAnswered ? `
+                            <button onclick="nextQuestion()" class="mt-8 w-full bg-slate-900 text-white p-5 rounded-xl font-black text-base flex items-center justify-center gap-3 hover:bg-black transition-all">
+                                ${quizState.currentIdx === questions.length - 1 ? 'Ver resultados' : 'Siguiente'} <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function renderStatus(opt) {
+            if (currentMode === 'eval') return quizState.selectedId === opt.id ? '<i data-lucide="chevron-right" class="w-4 h-4"></i>' : '';
+            if (opt.correct) return '<i data-lucide="check-circle" class="text-green-600 w-5 h-5"></i>';
+            if (quizState.selectedId === opt.id && !opt.correct) return '<i data-lucide="x-circle" class="text-red-500 w-5 h-5"></i>';
+            return '';
+        }
+
+        function renderResults() {
+            const questions = currentMode === 'eval' ? TEST_SESGOS : IDENTIFICACION_SESGOS;
+            let level = "", color = "";
+            if (currentMode === 'eval') {
+                if (quizState.score <= 3) { level = "Bajo nivel de sesgo cognitivo"; color = "text-green-600 bg-green-50"; }
+                else if (quizState.score <= 6) { level = "Nivel medio de sesgo cognitivo"; color = "text-orange-600 bg-orange-50"; }
+                else { level = "Alto nivel de sesgo cognitivo"; color = "text-red-600 bg-red-50"; }
+            } else {
+                if (quizState.score <= 4) { level = "Comprensión básica"; color = "text-red-600 bg-red-50"; }
+                else if (quizState.score <= 7) { level = "Comprensión intermedia"; color = "text-orange-600 bg-orange-50"; }
+                else { level = "Comprensión avanzada"; color = "text-green-600 bg-green-50"; }
+            }
+            const content = document.getElementById('app-content');
+            content.innerHTML = `
+                <div class="max-w-md mx-auto py-12 px-6 animate-in text-center">
+                    <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-10 space-y-6">
+                        <div class="bg-purple-600 text-white w-14 h-14 rounded-xl flex items-center justify-center mx-auto shadow-lg">
+                            <i data-lucide="activity" class="w-7 h-7"></i>
+                        </div>
+                        <h2 class="text-2xl font-black text-slate-900 italic">Resultado Final</h2>
+                        <div class="text-6xl font-black text-slate-900 tabular-nums">
+                            ${quizState.score}<span class="text-slate-200 text-2xl">/</span><span class="text-slate-200 text-2xl">${questions.length}</span>
+                        </div>
+                        <div class="p-5 rounded-xl font-black italic text-base ${color} border-2 border-current/10">${level}</div>
+                        <button onclick="resetQuiz()" class="w-full bg-slate-900 text-white p-5 rounded-xl font-black text-base flex items-center justify-center gap-3 hover:bg-black transition-all">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Reintentar
+                        </button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function showPage(p) {
+            currentPage = p;
+            currentMode = null;
+            if (p === 'collection') collectionIdx = 0;
+            render();
+        }
+
+        function changeCollection(delta) {
+            const nextIdx = collectionIdx + delta;
+            if (nextIdx >= 0 && nextIdx < COLECCION_DETALLADA.length) {
+                collectionIdx = nextIdx;
+                render();
+            }
+        }
+
+        function startQuiz(m) {
+            currentMode = m;
+            quizState = { currentIdx: 0, hasAnswered: false, score: 0, selectedId: null };
+            render();
+        }
+
+        function handleAnswer(id) {
+            if (quizState.hasAnswered) return;
+            const questions = currentMode === 'eval' ? TEST_SESGOS : IDENTIFICACION_SESGOS;
+            const opt = questions[quizState.currentIdx].options.find(o => o.id === id);
+            quizState.selectedId = id;
+            quizState.hasAnswered = true;
+            if (currentMode === 'eval') { if (opt.bias) quizState.score++; }
+            else { if (opt.correct) quizState.score++; }
+            render();
+        }
+
+        function nextQuestion() {
+            const questions = currentMode === 'eval' ? TEST_SESGOS : IDENTIFICACION_SESGOS;
+            if (quizState.currentIdx < questions.length - 1) {
+                quizState.currentIdx++;
+                quizState.hasAnswered = false;
+                quizState.selectedId = null;
+                render();
+            } else {
+                renderResults();
+            }
+        }
+
+        function resetQuiz() { startQuiz(currentMode); }
+        window.onload = () => render();
+    </script>
+</body>
+</html>
